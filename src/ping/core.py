@@ -1,3 +1,5 @@
+# ping.py - library only
+
 from __future__ import annotations
 import subprocess
 import platform
@@ -13,12 +15,14 @@ if not logger.handlers:
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
 
+
 def _resolve_ipv4(host: str) -> List[str]:
     try:
         infos = socket.getaddrinfo(host, None, socket.AF_INET, socket.SOCK_STREAM)
         return sorted({info[4][0] for info in infos})
     except Exception:
         return []
+
 
 def ping_host(host: str, count: int = 10, timeout: int = 5) -> Dict[str, Any]:
     resolved_ips = _resolve_ipv4(host)
@@ -69,6 +73,7 @@ def ping_host(host: str, count: int = 10, timeout: int = 5) -> Dict[str, Any]:
 
     return result
 
+
 def ping_hosts(
     hosts: List[str], count: int = 10, timeout: int = 5, print_live: bool = True
 ) -> Dict[str, Any]:
@@ -115,6 +120,7 @@ def ping_hosts(
         },
     }
 
+
 def scan_ping(
     target: Union[str, List[str]],
     count: int = 10,
@@ -127,6 +133,7 @@ def scan_ping(
         return ping_hosts(target, count=count, timeout=timeout, print_live=print_live)
     else:
         return {"error": "target must be a string or list of strings"}
+
 
 def _parse_ping_output(output: str, result: Dict[str, Any], system: str) -> None:
     try:
@@ -180,13 +187,3 @@ def _parse_ping_output(output: str, result: Dict[str, Any], system: str) -> None
                         pass
     except Exception:
         logger.debug("Failed to parse ping output", exc_info=True)
-
-def main_cli():
-    import sys
-    hosts = sys.argv[1:]
-    if not hosts:
-        print("Usage: ping-cli host [host2 ...]")
-        raise SystemExit(2)
-    res = ping_hosts(hosts, count=3, timeout=3, print_live=True)
-    ok = res["summary"]["alive_count"] > 0
-    raise SystemExit(0 if ok else 1)
