@@ -4,17 +4,7 @@ from __future__ import annotations
 import subprocess
 import platform
 import socket
-import logging
 from typing import Union, List, Dict, Any
-
-logger = logging.getLogger("ping")
-if not logger.handlers:
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("[%(levelname)s] %(name)s: %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
-
 
 def _resolve_ipv4(host: str) -> List[str]:
     try:
@@ -49,7 +39,6 @@ def ping_host(host: str, count: int = 10, timeout: int = 5) -> Dict[str, Any]:
         else:
             cmd = ["ping", "-c", str(count), "-W", str(timeout), host]
 
-        logger.debug("Running ping command: %s", " ".join(cmd))
         proc = subprocess.run(
             cmd, capture_output=True, text=True, timeout=(timeout * count + 10)
         )
@@ -69,7 +58,6 @@ def ping_host(host: str, count: int = 10, timeout: int = 5) -> Dict[str, Any]:
         result["error"] = "Ping command not found - ensure ping is installed and in PATH"
     except Exception as e:
         result["error"] = f"Ping failed: {e}"
-        logger.debug("ping_host exception", exc_info=True)
 
     return result
 
@@ -87,29 +75,22 @@ def ping_hosts(
     alive_count = 0
     total = len(hosts)
 
-    logger.info(
-        "Starting ping scan of %d hosts (count=%d, timeout=%ds)", total, count, timeout
-    )
     for idx, host in enumerate(hosts, start=1):
-        logger.info("[%d/%d] Pinging %s...", idx, total, host)
         res = ping_host(host, count=count, timeout=timeout)
         results.append(res)
 
         if res["alive"]:
             alive_count += 1
-            logger.info(
-                "✔ %s is alive (avg=%s ms, loss=%s%%)",
-                host, res["avg_response_time"], res["packet_loss_percent"]
-            )
+            print(f"✔ {host} is alive (avg={res['avg_response_time']} ms, loss={res['packet_loss_percent']}%)")
             if print_live:
                 ip = res.get("resolved_ip") or host
                 print(f"{host}\t{ip}")
         else:
             err = f" ({res['error']})" if res.get("error") else ""
-            logger.info("✘ %s unreachable%s", host, err)
+            print(f"✘ {host} unreachable{err}")
 
     success_rate = (alive_count / total * 100.0) if total else 0.0
-    logger.info("Ping scan complete: %d/%d alive (%.2f%%).", alive_count, total, success_rate)
+    print(f"Ping scan complete: {alive_count}/{total} alive ({success_rate:.2f}%).")
 
     return {
         "results": results,
@@ -186,4 +167,4 @@ def _parse_ping_output(output: str, result: Dict[str, Any], system: str) -> None
                     except Exception:
                         pass
     except Exception:
-        logger.debug("Failed to parse ping output", exc_info=True)
+        print("Failed to parse ping output", exc_info=True)
