@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""
-ping/core.py
-
-Standalone ping module extracted from spider2.
-"""
-
 from __future__ import annotations
 import subprocess
 import platform
