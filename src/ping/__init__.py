@@ -1,4 +1,4 @@
-from .core import scan_ping
+from .core import ping
 from .icmp import ping_icmp, ping_many_icmp
 
 __all__ = [
