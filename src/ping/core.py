@@ -13,7 +13,7 @@ def _resolve_ipv4(host: str) -> List[str]:
         return []
 
 
-def ping_host(host: str, count: int = 10, timeout: int = 5) -> Dict[str, Any]:
+def ping_host_cmd(host: str, count: int = 10, timeout: int = 5) -> Dict[str, Any]:
     resolved_ips = _resolve_ipv4(host)
     resolved_ip = resolved_ips[0] if resolved_ips else None
 
@@ -63,7 +63,7 @@ def ping_host(host: str, count: int = 10, timeout: int = 5) -> Dict[str, Any]:
     return result
 
 
-def ping_hosts(
+def ping_hosts_cmd(
     hosts: List[str], count: int = 10, timeout: int = 5, print_live: bool = True
 ) -> Dict[str, Any]:
     if not hosts:
@@ -77,7 +77,7 @@ def ping_hosts(
     total = len(hosts)
 
     for idx, host in enumerate(hosts, start=1):
-        res = ping_host(host, count=count, timeout=timeout)
+        res = ping_host_cmd(host, count=count, timeout=timeout)
         results.append(res)
 
         if res["alive"]:
@@ -112,9 +112,11 @@ def scan_ping(
     print_live: bool = False,
 ) -> Dict[str, Any]:
     if isinstance(target, str):
-        return ping_host(target, count=count, timeout=timeout)
+        return ping_host_cmd(target, count=count, timeout=timeout)
     elif isinstance(target, list):
-        return ping_hosts(target, count=count, timeout=timeout, print_live=print_live)
+        return ping_hosts_cmd(
+            target, count=count, timeout=timeout, print_live=print_live
+        )
     else:
         return {"error": "target must be a string or list of strings"}
 

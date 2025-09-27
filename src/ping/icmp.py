@@ -25,6 +25,7 @@ def _resolve(host: str) -> Tuple[str, int]:
     return host, socket.AF_INET
 
 
+# Construct ICMP or ICMPv6 packet
 def _icmp_packet(
     ip: str, family: int, ident: int, seq: int, ttl: int, df: bool, payload: bytes
 ):
@@ -35,6 +36,7 @@ def _icmp_packet(
         flags = "DF" if df else 0
         layer3 = IP(dst=ip, ttl=ttl, flags=flags)
         l4 = ICMP(id=ident, seq=seq)
+    # Create packet using stacking
     pkt = layer3 / l4 / Raw(payload if payload else b"")
     return pkt
 
@@ -47,9 +49,7 @@ def ping_once(
     df: bool = False,
     payload: bytes = b"hello",
 ) -> Dict[str, Any]:
-    """
-    Send one echo request and return a result dict.
-    """
+    # Send one echo request and return a result dict.
     ip, fam = _resolve(host)
     ident = (os.getpid() & 0xFFFF) ^ random.randint(0, 0xFFFF)
     seq = random.randint(0, 0xFFFF)
