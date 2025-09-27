@@ -1,10 +1,9 @@
-# ping.py - library only
-
 from __future__ import annotations
 import subprocess
 import platform
 import socket
 from typing import Union, List, Dict, Any
+
 
 def _resolve_ipv4(host: str) -> List[str]:
     try:
@@ -55,7 +54,9 @@ def ping_host(host: str, count: int = 10, timeout: int = 5) -> Dict[str, Any]:
     except subprocess.TimeoutExpired:
         result["error"] = f"Ping command timed out after {timeout * count + 10} seconds"
     except FileNotFoundError:
-        result["error"] = "Ping command not found - ensure ping is installed and in PATH"
+        result["error"] = (
+            "Ping command not found - ensure ping is installed and in PATH"
+        )
     except Exception as e:
         result["error"] = f"Ping failed: {e}"
 
@@ -81,7 +82,9 @@ def ping_hosts(
 
         if res["alive"]:
             alive_count += 1
-            print(f"✔ {host} is alive (avg={res['avg_response_time']} ms, loss={res['packet_loss_percent']}%)")
+            print(
+                f"✔ {host} is alive (avg={res['avg_response_time']} ms, loss={res['packet_loss_percent']}%)"
+            )
             if print_live:
                 ip = res.get("resolved_ip") or host
                 print(f"{host}\t{ip}")
@@ -126,7 +129,9 @@ def _parse_ping_output(output: str, result: Dict[str, Any], system: str) -> None
                     for part in parts:
                         if "received =" in part:
                             try:
-                                result["packets_received"] = int(part.split("=")[1].strip())
+                                result["packets_received"] = int(
+                                    part.split("=")[1].strip()
+                                )
                             except Exception:
                                 pass
                         elif "loss)" in part and "%" in part:
@@ -153,8 +158,12 @@ def _parse_ping_output(output: str, result: Dict[str, Any], system: str) -> None
                                 pass
                         if "packet loss" in part and "%" in part:
                             try:
-                                num = "".join(ch for ch in part if ch.isdigit() or ch == ".")
-                                result["packet_loss_percent"] = float(num) if num else 100.0
+                                num = "".join(
+                                    ch for ch in part if ch.isdigit() or ch == "."
+                                )
+                                result["packet_loss_percent"] = (
+                                    float(num) if num else 100.0
+                                )
                             except Exception:
                                 pass
                 elif ("rtt" in line or "round-trip" in line) and "=" in line:

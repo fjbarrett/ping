@@ -1,3 +1,5 @@
 # ping
 
-A simple cross-platform ping helper library.
+Ping package for python projects
+
+This can be installed with pip.
