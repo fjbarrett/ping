@@ -105,7 +105,7 @@ def ping_hosts_cmd(
     }
 
 
-def scan_ping(
+def ping(
     target: Union[str, List[str]],
     count: int = 10,
     timeout: int = 5,
