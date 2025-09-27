@@ -3,7 +3,7 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ping"
+name = "scan-ping"                 # strongly recommend NOT "ping"
 version = "0.1.0"
 description = "Simple cross-platform ping helpers"
 readme = "README.md"
@@ -12,7 +12,8 @@ license = { text = "MIT" }
 authors = [{ name = "Frank Barrett" }]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
+include = ["ping*"]
 
 [project.scripts]
 ping-cli = "ping.core:main_cli"

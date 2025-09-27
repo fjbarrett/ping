@@ -47,7 +47,7 @@ def ping_once(
     iface: Optional[str] = None,
     ttl: int = 64,
     df: bool = False,
-    payload: bytes = b"hello",
+    payload: bytes = b"payload",
 ) -> Dict[str, Any]:
     # Send one echo request and return a result dict.
     ip, fam = _resolve(host)
@@ -122,7 +122,7 @@ def ping_icmp(
     iface: Optional[str] = None,
     ttl: int = 64,
     df: bool = False,
-    payload: bytes = b"hello",
+    payload: bytes = b"payload",
 ) -> Dict[str, Any]:
     """
     Multi-echo with stats, Scapy-based.
@@ -169,7 +169,7 @@ def ping_many_icmp(
     iface: Optional[str] = None,
     ttl: int = 64,
     df: bool = False,
-    payload: bytes = b"hello",
+    payload: bytes = b"payload",
 ) -> Dict[str, Any]:
     results = []
     alive = 0
