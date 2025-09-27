@@ -56,7 +56,7 @@ def ping_once(
     pkt = _icmp_packet(ip, fam, ident, seq, ttl, df, payload)
 
     t0 = time.perf_counter()
-    ans = sr1(pkt, timeout=timeout, verbose=0, iface=iface)
+    ans = sr1(pkt, timeout=timeout, verbose=0)
     t1 = time.perf_counter()
 
     rtt_ms = round((t1 - t0) * 1000.0, 3)
