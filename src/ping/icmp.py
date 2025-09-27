@@ -114,7 +114,7 @@ def ping_once(
     return result
 
 
-def ping(
+def ping_icmp(
     host: str,
     count: int = 4,
     timeout: float = 1.0,
@@ -161,7 +161,7 @@ def ping(
     return out
 
 
-def ping_many(
+def ping_many_icmp(
     hosts: List[str],
     count: int = 2,
     timeout: float = 1.0,
@@ -174,7 +174,7 @@ def ping_many(
     results = []
     alive = 0
     for h in hosts:
-        r = ping(
+        r = ping_icmp(
             h,
             count=count,
             timeout=timeout,
