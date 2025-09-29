@@ -2,14 +2,12 @@ from __future__ import annotations
 import os, time, socket, random, statistics
 from typing import Any, Dict, List, Optional, Tuple
 
-from scapy.all import conf, sr1, send, IP, ICMP, Raw, IPv6, ICMPv6EchoRequest
+from scapy.all import conf, sr1, IP, ICMP, Raw, IPv6, ICMPv6EchoRequest
 
 
 def _resolve(host: str) -> Tuple[str, int]:
-    """
-    Return (ip, family). family = socket.AF_INET or socket.AF_INET6
-    Prefer IPv4 unless host is explicitly IPv6 or only AAAA exists.
-    """
+    # Return (ip, family). family = socket.AF_INET or socket.AF_INET6
+    # Prefer IPv4 unless host is explicitly IPv6 or only AAAA exists.
     try:
         infos = socket.getaddrinfo(host, None, 0, 0, 0, socket.AI_ADDRCONFIG)
         # Prefer IPv4
@@ -114,7 +112,7 @@ def ping_once(
     return result
 
 
-def ping_icmp(
+def icmp_ping(
     host: str,
     count: int = 4,
     timeout: float = 1.0,
@@ -196,3 +194,12 @@ def ping_many_icmp(
             "success_rate": round((alive / total * 100.0), 2) if total else 0.0,
         },
     }
+
+
+# def main():
+#     # Example usage
+#     print("Classic print statement")
+#     print(ping_icmp("google.com"))
+
+
+# main()
