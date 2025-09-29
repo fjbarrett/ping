@@ -112,7 +112,7 @@ def ping(
     print_live: bool = False,
 ) -> Dict[str, Any]:
     if isinstance(target, str):
-        return ping_host_cmd(target, count=count, timeout=timeout)
+        return cmd_ping(target, count=count, timeout=timeout)
     elif isinstance(target, list):
         return ping_hosts_cmd(
             target, count=count, timeout=timeout, print_live=print_live
