@@ -1,5 +1,5 @@
 # ping
 
-Ping package for python projects
+Ping component for Python projects
 
-This can be installed with pip.
+There are TCP, UDP and ICMP style pings using packets made with scapy.

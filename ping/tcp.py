@@ -1,7 +1,7 @@
 from scapy.all import IP, TCP, sr1
 
 
-def tcp_ping(host: str, port: int = 80, timeout: float = 1.0) -> dict:
+def tcp_ping(host: str, port: int = 80, timeout: float = 5.0) -> dict:
     """
     Performs a TCP SYN ping to a specified host and port.
     """
@@ -37,6 +37,5 @@ def tcp_ping(host: str, port: int = 80, timeout: float = 1.0) -> dict:
 
     return result
 
-
-# Example usage
-# print(tcp_ping("8.8.8.8", port=53))
+    # Example usage
+    # print(tcp_ping("8.8.8.8", port=53))
