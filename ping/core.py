@@ -14,7 +14,7 @@ def sweep(host):
 
 
 def main():
-    sweep("news.ycombinator.com")
+    sweep("google.com")
 
 
 if __name__ == "__main__":
