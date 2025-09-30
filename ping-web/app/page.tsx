@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-type Protocol = "icmp" | "tcp";
+type Protocol = "icmp" | "tcp" | "arp";
 
 export default function Home() {
   const [message, setMessage] = useState("");
@@ -22,19 +22,31 @@ export default function Home() {
   }
 
   function buildEndpoint() {
-    if (!host) return "";
+    const h = host.trim();
+    if (!h) return "";
+
     if (protocol === "icmp") {
-      return `ping/icmp?host=${encodeURIComponent(host.trim())}`;
+      return `ping/icmp?host=${encodeURIComponent(h)}`;
     }
-    // tcp
+
+    if (protocol === "arp") {
+      // Assumes your backend supports: GET /api/ping/arp?host=<IPv4>
+      // (Typically ARP works for IPv4 targets on the local L2 network.)
+      return `ping/arp?host=${encodeURIComponent(h)}`;
+    }
+
+    if (protocol === "udp") {
+      return `ping/udp?host=${encodeURIComponent(h)}`;
+    }
+
+    // TCP
     const p = typeof port === "number" ? port : parseInt(String(port), 10);
     if (!Number.isFinite(p) || p < 1 || p > 65535) return "";
-    return `ping/tcp?host=${encodeURIComponent(host.trim())}&port=${p}`;
+    return `ping/tcp?host=${encodeURIComponent(h)}&port=${p}`;
   }
 
   const endpoint = buildEndpoint();
-  const canPing =
-    !!host.trim() && (protocol === "icmp" || (protocol === "tcp" && endpoint));
+  const canPing = Boolean(endpoint);
 
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 bg-gray-100 text-gray-900">
@@ -46,9 +58,14 @@ export default function Home() {
             type="text"
             value={host}
             onChange={(e) => setHost(e.target.value)}
-            placeholder="e.g. 8.8.8.8 or example.com"
+            placeholder="e.g. 8.8.8.8 or 192.168.1.10"
             className="w-full px-3 py-2 border rounded bg-white text-gray-900"
           />
+          {protocol === "arp" && (
+            <span className="block mt-1 text-xs text-gray-600">
+              ARP typically works only for IPv4 addresses on your local network.
+            </span>
+          )}
         </label>
 
         {/* Protocol + Port */}
@@ -62,10 +79,13 @@ export default function Home() {
             >
               <option value="icmp">ICMP (ping)</option>
               <option value="tcp">TCP (connect)</option>
+              <option value="arp">ARP (who-has)</option>
+              <option value="udp">UDP (echo)</option>
+
             </select>
           </label>
 
-          <label className={`${protocol === "tcp" ? "" : "opacity-60"}`}>
+          <label className={protocol === "tcp" ? "" : "opacity-60"}>
             <span className="block mb-1 text-sm font-medium">Port (TCP)</span>
             <input
               type="number"
