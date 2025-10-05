@@ -2,9 +2,7 @@ import socket
 
 
 def rdns_lookup(ip: str) -> dict:
-    """
-    Performs a reverse DNS lookup for the given IP address.
-    """
+    # Perform a reverse DNS lookup for the given IP address
     result = {
         "ip": ip,
         "domain": None,

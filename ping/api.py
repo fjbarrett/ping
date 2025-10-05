@@ -64,9 +64,6 @@ def run_udp_ping():
         return jsonify({"error": "Host parameter is required"}), 400
     result = udp_ping(host)  # ensure JSON-safe return
     return jsonify(result)
-    return jsonify(result)
-    result = tcp_ping(host, port)  # ensure JSON-safe return
-    return jsonify(result)
 
 
 if __name__ == "__main__":
