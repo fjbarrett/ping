@@ -11,9 +11,9 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route("/api/test", methods=["GET"])
-def run_test():
-    return jsonify({"message": "Test endpoint is working!"})
+@app.route("/api/health", methods=["GET"])
+def run_health_check():
+    return jsonify({"message": "Health check is working!"})
 
 
 @app.route("/api/ping/icmp", methods=["GET"])

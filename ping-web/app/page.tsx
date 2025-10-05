@@ -113,10 +113,10 @@ export default function Home() {
           </button>
 
           <button
-            onClick={() => callAPI("status")}
+            onClick={() => callAPI("health")}
             className="px-4 py-2 border border-green-400 text-green-600 bg-green-50 rounded hover:bg-green-100"
           >
-            Check Status
+            Check Health
           </button>
         </div>
 
