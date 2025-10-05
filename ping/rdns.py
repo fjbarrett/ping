@@ -1,7 +1,20 @@
 import socket
 
-try:
-    domain = socket.gethostbyaddr("8.8.8.8")
-    print(domain[0])
-except socket.herror:
-    print("No domain found for this IP.")
+
+def rdns_lookup(ip: str) -> dict:
+    """
+    Performs a reverse DNS lookup for the given IP address.
+    """
+    result = {
+        "ip": ip,
+        "domain": None,
+        "error": None,
+    }
+    try:
+        domain = socket.gethostbyaddr(ip)
+        result["domain"] = domain[0]
+    except socket.herror as e:
+        result["error"] = str(e)
+    except Exception as e:
+        result["error"] = str(e)
+    return result

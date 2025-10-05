@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-type Protocol = "icmp" | "tcp" | "arp";
+type Protocol = "icmp" | "tcp" | "arp" | "udp" | "rdns";
 
 export default function Home() {
   const [message, setMessage] = useState("");
@@ -30,13 +30,15 @@ export default function Home() {
     }
 
     if (protocol === "arp") {
-      // Assumes your backend supports: GET /api/ping/arp?host=<IPv4>
-      // (Typically ARP works for IPv4 targets on the local L2 network.)
       return `ping/arp?host=${encodeURIComponent(h)}`;
     }
 
     if (protocol === "udp") {
       return `ping/udp?host=${encodeURIComponent(h)}`;
+    }
+
+    if (protocol === "rdns") {
+      return `ping/rdns?ip=${encodeURIComponent(h)}`;
     }
 
     // TCP
@@ -81,6 +83,7 @@ export default function Home() {
               <option value="tcp">TCP (connect)</option>
               <option value="arp">ARP (who-has)</option>
               <option value="udp">UDP (echo)</option>
+              <option value="rdns">Reverse DNS Lookup</option>
 
             </select>
           </label>

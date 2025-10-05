@@ -2,4 +2,6 @@
 
 Ping component for Python projects
 
-There are TCP, UDP and ICMP style pings using packets made with scapy.
+There are TCP, UDP, ICMP, ARP style pings using packets made with scapy.
+
+There is also an option that allows Reverse DNS.

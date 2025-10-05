@@ -6,6 +6,7 @@ from ping.arp import arp_ping
 from ping.icmp import icmp_ping
 from ping.tcp import tcp_ping
 from ping.udp import udp_ping
+from ping.rdns import rdns_lookup
 
 app = Flask(__name__)
 CORS(app)
@@ -14,6 +15,15 @@ CORS(app)
 @app.route("/api/health", methods=["GET"])
 def run_health_check():
     return jsonify({"message": "Health check is working!"})
+
+
+@app.route("/api/ping/rdns", methods=["GET"])
+def run_rdns_lookup():
+    ip = request.args.get("ip", type=str)
+    if not ip:
+        return jsonify({"error": "IP parameter is required"}), 400
+    result = rdns_lookup(ip)  # ensure this returns a JSON-safe dict
+    return jsonify(result)
 
 
 @app.route("/api/ping/icmp", methods=["GET"])
