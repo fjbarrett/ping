@@ -1,23 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Protocol = "icmp" | "tcp" | "arp" | "udp" | "rdns";
+
+type HistoryItem = {
+  id: string;
+  ts: number;
+  protocol: Protocol;
+  host: string;
+  port?: number;
+  endpoint: string;
+  ok?: boolean;
+  body?: string;
+};
 
 export default function Home() {
   const [message, setMessage] = useState("");
   const [host, setHost] = useState("");
   const [protocol, setProtocol] = useState<Protocol>("icmp");
   const [port, setPort] = useState<number | "">("");
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("pingHistory");
+      if (raw) setHistory(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("pingHistory", JSON.stringify(history.slice(0, 50)));
+    } catch {}
+  }, [history]);
 
   async function callAPI(endpoint: string) {
     try {
       const res = await fetch(`http://127.0.0.1:8080/api/${endpoint}`);
       const data = await res.json();
-      setMessage(JSON.stringify(data, null, 2));
+      const body = JSON.stringify(data, null, 2);
+      setMessage(body);
+      return { ok: res.ok, body };
     } catch (err) {
       console.error(err);
-      setMessage("Error calling API");
+      const body = "Error calling API";
+      setMessage(body);
+      return { ok: false, body };
     }
   }
 
@@ -50,86 +79,168 @@ export default function Home() {
   const endpoint = buildEndpoint();
   const canPing = Boolean(endpoint);
 
+  async function handlePing() {
+    if (!endpoint) return;
+    const now = Date.now();
+    const parsedPort =
+      protocol === "tcp"
+        ? typeof port === "number"
+          ? port
+          : parseInt(String(port), 10)
+        : undefined;
+
+    const pending: HistoryItem = {
+      id: `${now}-${Math.random().toString(36).slice(2, 7)}`,
+      ts: now,
+      protocol,
+      host: host.trim(),
+      port: parsedPort,
+      endpoint,
+    };
+
+    setHistory((prev) => [pending, ...prev].slice(0, 50));
+
+    const res = await callAPI(endpoint);
+    setHistory((prev) =>
+      prev.map((it) =>
+        it.id === pending.id ? { ...it, ok: res.ok, body: res.body } : it
+      )
+    );
+  }
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 bg-gray-100 text-gray-900">
-      <main className="flex flex-col gap-6 row-start-2 items-center sm:items-start w-full max-w-xl">
-        {/* Host */}
-        <label className="w-full">
-          <span className="block mb-1 text-sm font-medium">Host</span>
-          <input
-            type="text"
-            value={host}
-            onChange={(e) => setHost(e.target.value)}
-            placeholder="e.g. 8.8.8.8 or 192.168.1.10"
-            className="w-full px-3 py-2 border rounded bg-white text-gray-900"
-          />
-          {protocol === "arp" && (
-            <span className="block mt-1 text-xs text-gray-600">
-              ARP typically works only for IPv4 addresses on your local network.
-            </span>
-          )}
-        </label>
+    <div className="font-sans min-h-screen p-8 pb-20 bg-gray-100 text-gray-900">
+      <div className="grid grid-cols-1 sm:grid-cols-[260px_1fr] gap-6 max-w-5xl w-full mx-auto">
+        {/* Sidebar: History */}
+        <aside className="row-start-1">
+          <div className="p-3 border rounded bg-white h-full max-h-[80vh] overflow-auto shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Recent</span>
+              <button
+                onClick={() => setHistory([])}
+                className="text-xs text-red-600 hover:underline"
+              >
+                Clear
+              </button>
+            </div>
 
-        {/* Protocol + Port */}
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <label>
-            <span className="block mb-1 text-sm font-medium">Protocol</span>
-            <select
-              value={protocol}
-              onChange={(e) => setProtocol(e.target.value as Protocol)}
-              className="w-full px-3 py-2 border rounded bg-white text-gray-900"
-            >
-              <option value="icmp">ICMP (ping)</option>
-              <option value="tcp">TCP (connect)</option>
-              <option value="arp">ARP (who-has)</option>
-              <option value="udp">UDP (echo)</option>
-              <option value="rdns">Reverse DNS Lookup</option>
-
-            </select>
-          </label>
-
-          <label className={protocol === "tcp" ? "" : "opacity-60"}>
-            <span className="block mb-1 text-sm font-medium">Port (TCP)</span>
-            <input
-              type="number"
-              min={1}
-              max={65535}
-              value={port}
-              onChange={(e) =>
-                setPort(e.target.value === "" ? "" : Number(e.target.value))
-              }
-              placeholder="e.g. 80"
-              disabled={protocol !== "tcp"}
-              className="w-full px-3 py-2 border rounded bg-white text-gray-900 disabled:bg-gray-100"
-            />
-          </label>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-3">
-          <button
-            onClick={() => endpoint && callAPI(endpoint)}
-            disabled={!canPing}
-            className="px-4 py-2 border border-blue-400 text-blue-600 bg-blue-50 rounded hover:bg-blue-100 disabled:bg-gray-200 disabled:text-gray-400"
-          >
-            Trigger Ping
-          </button>
-
-          <button
-            onClick={() => callAPI("health")}
-            className="px-4 py-2 border border-green-400 text-green-600 bg-green-50 rounded hover:bg-green-100"
-          >
-            Check Health
-          </button>
-        </div>
-
-        {/* Output */}
-        {message && (
-          <div className="w-full mt-2 p-3 border rounded bg-white text-gray-900 shadow">
-            <pre className="whitespace-pre-wrap break-words">{message}</pre>
+            <ul className="space-y-2">
+              {history.map((item) => (
+                <li key={item.id}>
+                  <button
+                    onClick={() => {
+                      setHost(item.host);
+                      setProtocol(item.protocol);
+                      if (item.port) setPort(item.port);
+                      else setPort("");
+                      setMessage(item.body ?? "");
+                    }}
+                    className="w-full text-left px-2 py-1 rounded hover:bg-gray-50"
+                    title={item.endpoint}
+                  >
+                    <div className="text-sm">
+                      {item.protocol.toUpperCase()} {item.host}
+                      {item.port ? `:${item.port}` : ""}
+                    </div>
+                    <div className="text-xs text-gray-500 flex items-center gap-2">
+                      <span>{new Date(item.ts).toLocaleTimeString()}</span>
+                      {item.ok === true && (
+                        <span className="text-green-600">✓</span>
+                      )}
+                      {item.ok === false && (
+                        <span className="text-red-600">✗</span>
+                      )}
+                    </div>
+                  </button>
+                </li>
+              ))}
+              {history.length === 0 && (
+                <li className="text-xs text-gray-500">No recent pings</li>
+              )}
+            </ul>
           </div>
-        )}
-      </main>
+        </aside>
+
+        {/* Main content */}
+        <main className="flex flex-col gap-6 items-center sm:items-start w-full max-w-xl">
+          {/* Host */}
+          <label className="w-full">
+            <span className="block mb-1 text-sm font-medium">Host</span>
+            <input
+              type="text"
+              value={host}
+              onChange={(e) => setHost(e.target.value)}
+              placeholder="e.g. 8.8.8.8 or 192.168.1.10"
+              className="w-full px-3 py-2 border rounded bg-white text-gray-900"
+            />
+            {protocol === "arp" && (
+              <span className="block mt-1 text-xs text-gray-600">
+                ARP typically works only for IPv4 addresses on your local network.
+              </span>
+            )}
+          </label>
+
+          {/* Protocol + Port */}
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label>
+              <span className="block mb-1 text-sm font-medium">Protocol</span>
+              <select
+                value={protocol}
+                onChange={(e) => setProtocol(e.target.value as Protocol)}
+                className="w-full px-3 py-2 border rounded bg-white text-gray-900"
+              >
+                <option value="icmp">ICMP (ping)</option>
+                <option value="tcp">TCP (connect)</option>
+                <option value="arp">ARP (who-has)</option>
+                <option value="udp">UDP (echo)</option>
+                <option value="rdns">Reverse DNS Lookup</option>
+              </select>
+            </label>
+
+            <label className={protocol === "tcp" ? "" : "opacity-60"}>
+              <span className="block mb-1 text-sm font-medium">Port (TCP)</span>
+              <input
+                type="number"
+                min={1}
+                max={65535}
+                value={port}
+                onChange={(e) =>
+                  setPort(e.target.value === "" ? "" : Number(e.target.value))
+                }
+                placeholder="e.g. 80"
+                disabled={protocol !== "tcp"}
+                className="w-full px-3 py-2 border rounded bg-white text-gray-900 disabled:bg-gray-100"
+              />
+            </label>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3">
+            <button
+              onClick={handlePing}
+              disabled={!canPing}
+              className="px-4 py-2 border border-blue-400 text-blue-600 bg-blue-50 rounded hover:bg-blue-100 disabled:bg-gray-200 disabled:text-gray-400"
+            >
+              Trigger Ping
+            </button>
+
+            <button
+              onClick={() => callAPI("health")}
+              className="px-4 py-2 border border-green-400 text-green-600 bg-green-50 rounded hover:bg-green-100"
+            >
+              Check Health
+            </button>
+          </div>
+
+          {/* Output */}
+          {message && (
+            <div className="w-full mt-2 p-3 border rounded bg-white text-gray-900 shadow">
+              <pre className="whitespace-pre-wrap break-words">{message}</pre>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
+
