@@ -31,8 +31,10 @@ def run_icmp_ping():
     host = request.args.get("host", type=str)
     if not host:
         return jsonify({"error": "Host parameter is required"}), 400
+    count = request.args.get("count", type=int, default=4)
+    timeout = request.args.get("timeout", type=float, default=1.0)
     try:
-        result = icmp_ping(host)  # ensure this returns a JSON-safe dict
+        result = icmp_ping(host, count=count, timeout=timeout)
         return jsonify(result)
     except PermissionError:
         return jsonify({"error": "ICMP requires admin/root privileges on this OS"}), 500
@@ -42,9 +44,12 @@ def run_icmp_ping():
 def run_tcp_ping():
     host = request.args.get("host", type=str)
     port = request.args.get("port", type=int)
+    timeout = request.args.get("timeout", type=float, default=5.0)
     if not host or port is None:
         return jsonify({"error": "Host and port parameters are required"}), 400
-    result = tcp_ping(host, port)  # ensure JSON-safe return
+    if not (1 <= port <= 65535):
+        return jsonify({"error": "Port must be between 1 and 65535"}), 400
+    result = tcp_ping(host, port, timeout=timeout)
     return jsonify(result)
 
 
@@ -60,9 +65,13 @@ def run_arp_ping():
 @app.route("/api/ping/udp", methods=["GET"])
 def run_udp_ping():
     host = request.args.get("host", type=str)
+    port = request.args.get("port", type=int, default=53000)
+    timeout = request.args.get("timeout", type=float, default=1.0)
     if not host:
         return jsonify({"error": "Host parameter is required"}), 400
-    result = udp_ping(host)  # ensure JSON-safe return
+    if not (1 <= port <= 65535):
+        return jsonify({"error": "Port must be between 1 and 65535"}), 400
+    result = udp_ping(host, port=port, timeout=timeout)
     return jsonify(result)
 
 
