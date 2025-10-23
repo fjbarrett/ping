@@ -3,13 +3,26 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "scan-ping"                 # strongly recommend NOT "ping"
+name = "scan-ping"
 version = "0.1.0"
 description = "Simple cross-platform ping helpers"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Frank Barrett" }]
+dependencies = [
+  "scapy>=2.5.0",
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+api = ["Flask>=3.0.0", "flask-cors>=4.0.0"]
+dev = ["pytest>=7", "ruff>=0.5", "mypy>=1.8", "build>=1.2"]
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -17,3 +30,7 @@ include = ["ping*"]
 
 [project.scripts]
 ping-cli = "ping.core:main_cli"
+
+[project.urls]
+Homepage = "https://github.com/fjbarrett/ping"
+Source = "https://github.com/fjbarrett/ping"
